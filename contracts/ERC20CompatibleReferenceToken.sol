@@ -103,11 +103,11 @@ contract ERC20CompatibleReferenceToken is ERC20, EIP777, EIP672 {
         return true;
     }
 
-    function mint(address _tokenHolder, uint256 _value, bytes _operatorData) public onlyOwner returns(bool) {
+    function ownerMint(address _tokenHolder, uint256 _value) public returns(bool) {
         balances[_tokenHolder] += _value;
         totalSupply += _value;
 
-        bytes memory empty;
+        /* bytes memory empty;
 
         address recipientImplementation = interfaceAddr(_tokenHolder, "ITokenRecipient");
         if (recipientImplementation != 0) {
@@ -117,7 +117,7 @@ contract ERC20CompatibleReferenceToken is ERC20, EIP777, EIP672 {
             require(isEOA(_tokenHolder));
         }
         Mint(_tokenHolder, _value); // TODO Add _operatorData or not?
-        if (erc20compatible) { Transfer(0x0, _tokenHolder, _value); } 
+        if (erc20compatible) { Transfer(0x0, _tokenHolder, _value); } */
         return true;
     }
 
