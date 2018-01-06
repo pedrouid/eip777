@@ -36,6 +36,12 @@ contract ERC20CompatibleReferenceToken is ERC20, EIP777, EIP672 {
         return balances[_tokenHolder];
     }
 
+    function name() public constant returns (string) { return name; }
+    function symbol() public constant returns (string) { return symbol; }
+    function totalSupply() public constant returns (uint256) { return totalSupply; }
+    function decimals() public constant returns (uint8) { return decimals; }
+    function erc20compatible() public constant returns (bool) { return erc20compatible; }
+
     function setERC20Compatiblility(bool _erc20compatible) public onlyOwner { erc20compatible = _erc20compatible; }
 
     function transfer(address _to, uint256 _value) public returns (bool success) {

@@ -31,6 +31,11 @@ contract ReferenceToken is EIP777, EIP672 {
         return balances[_tokenHolder];
     }
 
+    function name() public constant returns (string) { return name; }
+    function symbol() public constant returns (string) { return symbol; }
+    function totalSupply() public constant returns (uint256) { return totalSupply; }
+    function decimals() public constant returns (uint8) { return decimals; }
+
     function erc20compatible() public constant returns (bool) { return false; }
 
     function send(address _to, uint256 _value) public {

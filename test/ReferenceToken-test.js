@@ -2,9 +2,12 @@ const TestRPC = require('ethereumjs-testrpc');
 const Web3 = require('web3');
 const chai = require('chai');
 const ensSimulator = require('ens-simulator');
+const ReferenceToken = require('../js/ReferenceToken');
+
 const assert = chai.assert;
 const { utils } = Web3;
-const ReferenceToken = require('../js/ReferenceToken');
+const log = (msg) => { if (process.env.MOCHA_VERBOSE) console.log(msg); };
+const blocks = [];
 
 describe('EIP777 Reference Token Test', () => {
   let testrpc;
@@ -38,5 +41,32 @@ describe('EIP777 Reference Token Test', () => {
      18
    );
    assert.ok(referenceToken.$address);
+   const name = await referenceToken.name();
+   assert.strictEqual(name, 'Reference Token');
+   log(`name: ${name}`);
+   const symbol = await referenceToken.symbol();
+   assert.strictEqual(symbol, 'XRT');
+   log(`symbol: ${symbol}`);
+   const decimals = await referenceToken.decimals();
+   assert.strictEqual(decimals, '18');
+   log(`decimals: ${decimals}`);
+   const totalSupply = await referenceToken.totalSupply();
+   assert.strictEqual(totalSupply, '0');
+   log(`totalSupply: ${totalSupply}`);
  }).timeout(20000);
+
+ it('should mint tokens for address 1', async () => {
+    log(referenceToken.$address);
+    blocks[0] = await web3.eth.getBlockNumber();
+    log(`block 0 -> ${blocks[0]}`);
+    await referenceToken.ownerMint(accounts[1], 10, '0x', { gas: 300000, from: accounts[0] });
+    blocks[1] = await web3.eth.getBlockNumber();
+    log(`block 1 -> ${blocks[1]}`);
+    const totalSupply = await referenceToken.totalSupply();
+    assert.equal(totalSupply, 10);
+    log(`totalSupply: ${totalSupply}`);
+    const balance = await referenceToken.balanceOf(accounts[1]);
+    assert.equal(balance, 10);
+    log(`balance[${accounts[1]}]: ${balance}`);
+}).timeout(6000)
 });
