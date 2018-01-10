@@ -34,13 +34,23 @@ describe('EIP777 ERC20-Compatible Reference Token Test', () => {
 
  it('should deploy the ERC20-compatible reference token contract', async () => {
    referenceToken = await ERC20CompatibleReferenceToken.new(web3,
-     'Reference Token',
-     'XRT',
-     18,
-     { from: accounts[0] }
+     'ERC20 Compatible Reference Token',
+     'XRT20',
+     18
    );
    assert.ok(referenceToken.$address);
-   log(referenceToken.$address);
+   const name = await referenceToken.name();
+   assert.strictEqual(name, 'ERC20 Compatible Reference Token');
+   log(`name: ${name}`);
+   const symbol = await referenceToken.symbol();
+   assert.strictEqual(symbol, 'XRT20');
+   log(`symbol: ${symbol}`);
+   const decimals = await referenceToken.decimals();
+   assert.strictEqual(decimals, '18');
+   log(`decimals: ${decimals}`);
+   const totalSupply = await referenceToken.totalSupply();
+   assert.strictEqual(totalSupply, '0');
+   log(`totalSupply: ${totalSupply}`);
  }).timeout(20000);
 
  it('should mint tokens for address 1', async () => {

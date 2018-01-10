@@ -7,11 +7,13 @@ interface EIP777 {
     function totalSupply() public constant returns (uint256);
     function decimals() public constant returns (uint8);
     function balanceOf(address owner) public constant returns (uint256);
+    function erc20compatible() public constant returns (bool);
 
     function send(address to, uint256 amount) public;
     function send(address to, uint256 amount, bytes userData) public;
 
-    function authorizeOperator(address operator, bool authorized) public;
+    function authorizeOperator(address operator) public;
+    function revokeOperator(address operator) public;
     function isOperatorAuthorizedFor(address operator, address tokenHolder) public constant returns (bool);
     function operatorSend(address from, address to, uint256 amount, bytes userData, bytes operatorData) public;
 
@@ -22,9 +24,10 @@ interface EIP777 {
         bytes userData,
         address indexed operator,
         bytes operatorData
-    );
-    event Mint(address indexed to, uint256 amount); // solhint-disable-line separate-by-one-line-in-contract
+    ); // solhint-disable-next-line separate-by-one-line-in-contract
+    event Mint(address indexed to, uint256 amount, address indexed operator, bytes operatorData);
     event Burn(address indexed from, uint256 amount);
     // solhint-disable-next-line no-simple-event-func-name
-    event AuthorizeOperator(address indexed operator, address indexed tokenHolder, bool authorize);
+    event AuthorizedOperator(address indexed operator, address indexed tokenHolder);
+    event RevokedOperator(address indexed operator, address indexed tokenHolder);
 }

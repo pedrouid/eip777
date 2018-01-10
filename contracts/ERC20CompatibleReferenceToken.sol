@@ -36,9 +36,16 @@ contract ERC20CompatibleReferenceToken is ERC20, EIP777, EIP672 {
         return balances[_tokenHolder];
     }
 
+    function name() public constant returns (string) { return name; }
+    function symbol() public constant returns (string) { return symbol; }
+    function totalSupply() public constant returns (uint256) { return totalSupply; }
+    function decimals() public constant returns (uint8) { return decimals; }
+    function erc20compatible() public constant returns (bool) { return erc20compatible; }
+
     function setERC20Compatiblility(bool _erc20compatible) public onlyOwner { erc20compatible = _erc20compatible; }
 
     function transfer(address _to, uint256 _value) public returns (bool success) {
+        require(erc20compatible);
         bytes memory empty;
         doSend(msg.sender, _to, _value, empty, msg.sender, empty);
         return true;
@@ -76,10 +83,16 @@ contract ERC20CompatibleReferenceToken is ERC20, EIP777, EIP672 {
         doSend(msg.sender, _to, _value, _userData, msg.sender, empty);
     }
 
-    function authorizeOperator(address _operator, bool _authorized) public {
-        if (_operator == msg.sender) { return; } // TODO Should we throw?
-        authorized[_operator][msg.sender] = _authorized;
-        AuthorizeOperator(_operator, msg.sender, _authorized);
+    function authorizeOperator(address _operator) public {
+        require(_operator != msg.sender);
+        authorized[_operator][msg.sender] = true;
+        AuthorizedOperator(_operator, msg.sender);
+    }
+
+    function revokeOperator(address _operator) public {
+        require(_operator != msg.sender);
+        authorized[_operator][msg.sender] = false;
+        RevokedOperator(_operator, msg.sender);
     }
 
     function isOperatorAuthorizedFor(address _operator, address _tokenHolder) public constant returns (bool) {
@@ -103,7 +116,7 @@ contract ERC20CompatibleReferenceToken is ERC20, EIP777, EIP672 {
         return true;
     }
 
-    function ownerMint(address _tokenHolder, uint256 _value) public returns(bool) {
+    function ownerMint(address _tokenHolder, uint256 _value, bytes _operatorData) public onlyOwner returns(bool) {
         balances[_tokenHolder] += _value;
         totalSupply += _value;
 
@@ -114,10 +127,14 @@ contract ERC20CompatibleReferenceToken is ERC20, EIP777, EIP672 {
             ITokenRecipient(recipientImplementation).tokensReceived(
                 0x0, _tokenHolder, _value, empty, msg.sender, _operatorData);
         } else {
-            require(isEOA(_tokenHolder));
+            require(!isContract(_tokenHolder));
         }
-        Mint(_tokenHolder, _value); // TODO Add _operatorData or not?
-        if (erc20compatible) { Transfer(0x0, _tokenHolder, _value); } */
+
+        Mint(_tokenHolder, _value, msg.sender, _operatorData);
+        if (erc20compatible) { Transfer(0x0, _tokenHolder, _value); }
+
+        */
+
         return true;
     }
 
@@ -143,16 +160,10 @@ contract ERC20CompatibleReferenceToken is ERC20, EIP777, EIP672 {
             ITokenRecipient(recipientImplementation).tokensReceived(
                 _from, _to, _value, _userData, _operator, _operatorData);
         } else {
-            require(isEOA(_to));
+            require(!isContract(_to));
         }
 
         Send(_from, _to, _value, _userData, _operator, _operatorData);
         if (erc20compatible) { Transfer(_from, _to, _value); }
-    }
-
-    function isEOA(address _addr) private returns(bool) {
-        uint size;
-        assembly { size := extcodesize(_addr) } // solhint-disable-line no-inline-assembly
-        return size == 0;
     }
 }
